@@ -28,7 +28,7 @@ class EnvUtilsDef {
 
   }
 
-  copyToClipboard(args) {
+  setupCopyToClipboard(args) {
 		var version = document.querySelector("meta[name='version']").getAttribute("content");
     this.addScript({
       type: 'text/javascript',
@@ -53,7 +53,7 @@ class EnvUtilsDef {
     var self = this;
     var data = self.getPageData();
 
-		self.copyToClipboard({
+		self.setupCopyToClipboard({
 			copyObj: selector,
 			text: function(trigger) {
 				var title = (trigger.getAttribute("data-title") && trigger.getAttribute("data-title").trim()) || data.og_title || "",
@@ -110,6 +110,8 @@ class EnvUtilsDef {
     });
 	}
 	shareToWeb(args) {
+    var self = this;
+
     var waitingForResultEl = document.querySelector("meta[name='waitingForResult']");
 
     logMessage("Share Args",args)
@@ -272,6 +274,40 @@ class EnvUtilsDef {
 
 		});
 	}
+  tryInitFBSDK() {
+    if (! window.FB) {
+      return new Promise(function(resolve, reject) {
+        if (! window.fbAsyncInit) {
+          window.fbAsyncInit = function() {
+            FB.init({
+              appId            : 'yourappid',
+              autoLogAppEvents : true,
+              xfbml            : true,
+              version          : 'v3.0'
+            });
+            resolve(true);
+          };
+        }
+
+        (function(d, s, id){
+           var js, fjs = d.getElementsByTagName(s)[0];
+           if (d.getElementById(id)) {return;}
+           js = d.createElement(s); js.id = id;
+           js.src = "https://connect.facebook.net/en_US/sdk.js";
+           fjs.parentNode.insertBefore(js, fjs);
+         }(document, 'script', 'facebook-jssdk'));
+
+         setTimeout(function () {
+           reject('too long');
+         }, 5000)
+      });
+    }
+    else {
+      return new Promise(function(resolve, reject) {
+        resolve(true)
+      });
+    }
+  }
 
   getPageData() {
 
@@ -309,6 +345,26 @@ class EnvUtilsDef {
         script.onerror = reject;
 
         document.body.appendChild(script);
+    });
+  }
+  addCss(attribute, text) {
+    return new Promise(function(resolve, reject) {
+
+        var node = document.createElement('link');
+        node.setAttribute('rel', 'stylesheet');
+        node.setAttribute('type', 'text/css');
+        for (var attr in attribute) {
+            var value = attribute[attr];
+            if (value) {
+              node.setAttribute(attr, value);
+            }
+        }
+        node.innerHTML = text;
+
+        node.onload = resolve;
+        node.onerror = reject;
+
+        document.body.appendChild(node);
     });
   }
   getParameterByName(name, url) {
