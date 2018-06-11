@@ -22,6 +22,21 @@ envObj.desktop = !(envObj.ios || envObj.android || envObj.blackberry || envObj.o
 envObj.facebookInAppBrowser = (userAgent.indexOf("FBAN") > -1) || (userAgent.indexOf("FBAV") > -1);
 envObj.lineInAppBrowser = (userAgent.indexOf("Line") > -1);
 envObj.inAppBrowser = envObj.facebookInAppBrowser || envObj.lineInAppBrowser;
+if (navigator.platform.substr(0,2) === 'iP'){
+  //iOS (iPhone, iPod or iPad)
+  var lte9 = /constructor/i.test(window.HTMLElement);
+  var nav = window.navigator, ua = nav.userAgent, idb = !!window.indexedDB;
+  if (ua.indexOf('Safari') !== -1 && ua.indexOf('Version') !== -1 && !nav.standalone){
+    //Safari (WKWebView/Nitro since 6+)
+    envObj.safari = true;
+  } else if ((!idb && lte9) || !window.statusbar.visible) {
+    //UIWebView
+    envObj.uiWebview = true;
+  } else if ((window.webkit && window.webkit.messageHandlers) || !lte9 || idb){
+    //WKWebView
+    envObj.wkWebview = true;
+  }
+}
 
 class EnvUtilsDef {
   constructor() {
