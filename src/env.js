@@ -398,5 +398,16 @@ class EnvUtilsDef {
     if (!results[2]) {return ''};
     return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
+  setInnerHtml(elm, html) {
+    elm.innerHTML = html;
+    Array.from(elm.querySelectorAll("script")).forEach(function(el) {
+      let newEl = document.createElement("script");
+      Array.from(el.attributes).forEach(function(el) {
+        newEl.setAttribute(el.name, el.value)
+      });
+      newEl.appendChild(document.createTextNode(el.innerHTML));
+      el.parentNode.replaceChild(newEl, el);
+    })
+  }
 }
 var EnvUtils = new EnvUtilsDef();
